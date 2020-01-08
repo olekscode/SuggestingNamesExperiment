@@ -2,10 +2,26 @@ Class {
 	#name : #SuggestingNamesExperiment,
 	#superclass : #Object,
 	#instVars : [
-		'methodsTable'
+		'methodsTable',
+		'tfidf'
 	],
 	#category : #SuggestingNamesExperiment
 }
+
+{ #category : #public }
+SuggestingNamesExperiment >> calculateTfidfScoreForEachWordInMethods [
+	| tfidfScores |
+	
+	tfidfScores := (methodsTable column: 'words') collect: [ :wordsOfAMethod |
+		(wordsOfAMethod asSet collect: [ :word |
+			word -> (tfidf scoreOf: word in: wordsOfAMethod) ]) asDataSeries ].
+	
+	"Remove column if it already exists"
+	(methodsTable columnNames includes: 'tfidfScores') ifTrue: [ 
+		methodsTable removeColumn: 'tfidfScores' ].
+	
+	methodsTable addColumn: tfidfScores named: 'tfidfScores'
+]
 
 { #category : #private }
 SuggestingNamesExperiment >> constructMethodsTableFromMetadata: methodsMetadataTable andWords: wordsTable [
@@ -58,4 +74,13 @@ SuggestingNamesExperiment >> splitWords [
 		words
 			ifNil: [ OrderedCollection new ]
 			ifNotNil: [ ' ' split: words ] ].
+]
+
+{ #category : #public }
+SuggestingNamesExperiment >> trainTfidf [
+	| documents |
+	documents := (methodsTable column: 'words') asOrderedCollection.
+	
+	tfidf := PGTermFrequencyInverseDocumentFrequency new.
+	tfidf trainOn: documents.
 ]
