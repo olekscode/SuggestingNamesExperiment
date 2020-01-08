@@ -38,7 +38,12 @@ SuggestingNamesExperiment >> filterData [
 { #category : #'private - filtering data' }
 SuggestingNamesExperiment >> filterRows [
 	methodsTable := methodsTable select: [ :row |
-		(self isNotEmpty: row) and: (self isNotAccessor: row) ].
+		(self isNotEmpty: row) and: [ (self isNotAccessor: row) and: [ (self isNotAbstract: row) and: (self isNotShouldNotImplement: row) ] ] ].
+]
+
+{ #category : #'private - filtering data' }
+SuggestingNamesExperiment >> isNotAbstract: rowOfMethodsTable [
+	^ (rowOfMethodsTable at: 'words') asArray ~= #(self subclass responsibility).
 ]
 
 { #category : #'private - filtering data' }
@@ -73,6 +78,11 @@ SuggestingNamesExperiment >> isNotAccessor: rowOfMethodsTable [
 SuggestingNamesExperiment >> isNotEmpty: rowOfMethodsTable [
 	^ (rowOfMethodsTable at: 'words') isNotEmpty
 		and: (rowOfMethodsTable at: 'tokenTypes') isNotEmpty.
+]
+
+{ #category : #'private - filtering data' }
+SuggestingNamesExperiment >> isNotShouldNotImplement: rowOfMethodsTable [
+	^ (rowOfMethodsTable at: 'words') asArray ~= #(self should not implement).
 ]
 
 { #category : #public }
@@ -144,6 +154,22 @@ SuggestingNamesExperiment >> splitWords [
 		words
 			ifNil: [ OrderedCollection new ]
 			ifNotNil: [ ' ' split: words ] ].
+]
+
+{ #category : #public }
+SuggestingNamesExperiment >> suggestWordsForMethodNameBasedOn: wordsFromMethod [
+	| scores |
+	
+	scores := (wordsFromMethod asSet collect: [ :word |
+		word -> (tfidf scoreOf: word in: wordsFromMethod) ]) asDataSeries.
+	
+	scores sortDescending.
+	^ (scores head: (3 min: scores size)) keys.
+]
+
+{ #category : #public }
+SuggestingNamesExperiment >> suggestWordsForMethodNameOf: aMethod [
+	^ self suggestWordsForMethodNameBasedOn: aMethod wordsFromIdentifierNames.
 ]
 
 { #category : #public }
