@@ -10,6 +10,10 @@ BaselineOfSuggestingNamesExperiment >> baseline: spec [
 	spec for: #common do: [	
 		"External dependencies"
 		spec
+			baseline: 'PharoCodeTokenizer'
+			with: [ spec repository: 'github://olekscode/PharoCodeTokenizer/src' ].
+			
+		spec
 			baseline: 'NgramModel'
 			with: [ spec repository: 'github://olekscode/NgramModel/src' ].
 			
@@ -23,6 +27,6 @@ BaselineOfSuggestingNamesExperiment >> baseline: spec [
 				
 		"Packages"
 		spec 
-			package: 'SuggestingNamesExperiment' with: [ spec requires: #('NgramModel' 'Polyglot' 'DataFrame') ];
+			package: 'SuggestingNamesExperiment' with: [ spec requires: #('PharoCodeTokenizer' 'NgramModel' 'Polyglot' 'DataFrame') ];
 			package: 'SuggestingNamesExperiment-Tests' with: [ spec requires: #('SuggestingNamesExperiment') ] ].
 ]
