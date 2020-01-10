@@ -24,9 +24,13 @@ BaselineOfSuggestingNamesExperiment >> baseline: spec [
 		spec
 			baseline: 'DataFrame'
 			with: [ spec repository: 'github://PolyMathOrg/DataFrame/src' ].
+			
+		spec
+  			baseline: 'RandomPartitioner'
+  			with: [ spec repository: 'github://PharoAI/RandomPartitioner/src' ].
 				
 		"Packages"
 		spec 
-			package: 'SuggestingNamesExperiment' with: [ spec requires: #('PharoCodeTokenizer' 'NgramModel' 'Polyglot' 'DataFrame') ];
+			package: 'SuggestingNamesExperiment' with: [ spec requires: #('PharoCodeTokenizer' 'NgramModel' 'Polyglot' 'DataFrame' 'RandomPartitioner') ];
 			package: 'SuggestingNamesExperiment-Tests' with: [ spec requires: #('SuggestingNamesExperiment') ] ].
 ]
