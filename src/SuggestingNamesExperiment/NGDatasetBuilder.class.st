@@ -4,70 +4,79 @@ Class {
 	#category : #SuggestingNamesExperiment
 }
 
-{ #category : #public }
-NGDatasetBuilder >> buildDataset [
-	| methodsTable wordsTable tokensTable |
-	
-	methodsTable := self loadMethodsTable.
-	wordsTable := self loadWordsTable.
-	tokensTable := self loadTokensTable.
-	
-	methodsTable addColumn: (wordsTable column: 'words').
-	methodsTable addColumn: (tokensTable column: 'tokenTypes').
-	
-	self splitWordsIn: methodsTable.
-	self splitTokenTypesIn: methodsTable.
-	
-	^ methodsTable
+{ #category : #'private - loading data' }
+NGDatasetBuilder >> loadMethodsTableFrom: aFileReference [
+	| methods |
+	methods := DataFrame readFromCsv: aFileReference withSeparator: Character tab.
+	self splitNamesIn: methods.
+	self splitNamesSourcesIn: methods.
+	^ methods.
 ]
 
 { #category : #'private - loading data' }
-NGDatasetBuilder >> loadMethodsTable [
-	^ DataFrame readFromCsv: self pathToMethodsTableFile.
+NGDatasetBuilder >> loadTestMethodsTable [
+	^ self loadMethodsTableFrom: self pathToTestMethodsTableFile
 ]
 
 { #category : #'private - loading data' }
-NGDatasetBuilder >> loadTokensTable [
-	^ DataFrame readFromCsv: self pathToTokensTableFile.
+NGDatasetBuilder >> loadTrainMethodsTable [
+	^ self loadMethodsTableFrom: self pathToTrainMethodsTableFile
 ]
 
 { #category : #'private - loading data' }
-NGDatasetBuilder >> loadWordsTable [
-	^ DataFrame readFromCsv: self pathToWordsTableFile.
+NGDatasetBuilder >> loadValidMethodsTable [
+	^ self loadMethodsTableFrom: self pathToValidMethodsTableFile
 ]
 
 { #category : #'private - loading data' }
 NGDatasetBuilder >> pathToDataDirectory [
-	^ '/Users/oleks/Documents/Research/2019-sourcecodedata/data' asFileReference
+	^ '/Users/oleks/Downloads/NameGen2020' asFileReference
 ]
 
 { #category : #'private - loading data' }
-NGDatasetBuilder >> pathToMethodsTableFile [
-	^ self pathToDataDirectory / 'methods.csv'.
+NGDatasetBuilder >> pathToTestMethodsTableFile [
+	^ self pathToDataDirectory / 'test_methods.csv'.
 ]
 
 { #category : #'private - loading data' }
-NGDatasetBuilder >> pathToTokensTableFile [
-	^ self pathToDataDirectory / 'tokens.csv'.
+NGDatasetBuilder >> pathToTrainMethodsTableFile [
+	^ self pathToDataDirectory / 'train_methods.csv'.
 ]
 
 { #category : #'private - loading data' }
-NGDatasetBuilder >> pathToWordsTableFile [
-	^ self pathToDataDirectory / 'words.csv'.
+NGDatasetBuilder >> pathToValidMethodsTableFile [
+	^ self pathToDataDirectory / 'valid_methods.csv'.
 ]
 
 { #category : #'private - loading data' }
-NGDatasetBuilder >> splitTokenTypesIn: methodsTable [
-	methodsTable toColumn: 'tokenTypes' applyElementwise: [ :tokenTypes |
-		tokenTypes
-			ifNil: [ OrderedCollection new ]
-			ifNotNil: [ ' ' split: tokenTypes ] ].
+NGDatasetBuilder >> splitNamesIn: methodsTable [
+	"This method will be removed"
+	| splitCamelcase makeLowercase removeNonAlphabetic joinWithSpaces preprocessName |
+	splitCamelcase := [ :name | name splitIdentifierName ].
+
+	makeLowercase := [ :tokens | 
+		tokens collect: [ :each | each asLowercase ] ].
+
+	removeNonAlphabetic := [ :tokens |
+		tokens select: [ :each | each allSatisfy: #isLetter ] ].
+
+	joinWithSpaces := [ :tokens | ' ' join: tokens ].
+
+	preprocessName :=  [ :name |
+		| tokens |
+		tokens := splitCamelcase value: name.
+		tokens := makeLowercase value: tokens.
+		tokens := removeNonAlphabetic value: tokens.
+		joinWithSpaces value: tokens ].
+
+	methodsTable 
+		toColumn: 'name'
+		applyElementwise: [ :each | preprocessName value: each ].
 ]
 
 { #category : #'private - loading data' }
-NGDatasetBuilder >> splitWordsIn: methodsTable [
-	methodsTable toColumn: 'words' applyElementwise: [ :words |
-		words
-			ifNil: [ OrderedCollection new ]
-			ifNotNil: [ ' ' split: words ] ].
+NGDatasetBuilder >> splitNamesSourcesIn: methodsTable [
+	methodsTable 
+		toColumns: #(name source)
+		applyElementwise: [ :each | each substrings ].
 ]
