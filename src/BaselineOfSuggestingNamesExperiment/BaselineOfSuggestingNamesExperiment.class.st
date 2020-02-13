@@ -15,11 +15,11 @@ BaselineOfSuggestingNamesExperiment >> baseline: spec [
 			
 		spec
 			baseline: 'NgramModel'
-			with: [ spec repository: 'github://olekscode/NgramModel/src' ].
+			with: [ spec repository: 'github://pharo-ai/NgramModel/src' ].
 			
 		spec
-			baseline: 'Polyglot'
-			with: [ spec repository: 'github://PolyMathOrg/Polyglot/src' ].
+			baseline: 'Tfidf'
+			with: [ spec repository: 'github://pharo-ai/TF-IDF/src' ].
 			
 		spec
 			baseline: 'DataFrame'
@@ -27,10 +27,10 @@ BaselineOfSuggestingNamesExperiment >> baseline: spec [
 			
 		spec
   			baseline: 'RandomPartitioner'
-  			with: [ spec repository: 'github://PharoAI/RandomPartitioner/src' ].
+  			with: [ spec repository: 'github://pharo-ai/RandomPartitioner/src' ].
 				
 		"Packages"
 		spec 
-			package: 'SuggestingNamesExperiment' with: [ spec requires: #('PharoCodeTokenizer' 'NgramModel' 'Polyglot' 'DataFrame' 'RandomPartitioner') ];
+			package: 'SuggestingNamesExperiment' with: [ spec requires: #('PharoCodeTokenizer' 'NgramModel' 'Tfidf' 'DataFrame' 'RandomPartitioner') ];
 			package: 'SuggestingNamesExperiment-Tests' with: [ spec requires: #('SuggestingNamesExperiment') ] ].
 ]
