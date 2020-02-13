@@ -12,7 +12,7 @@ Class {
 NGModel >> initialize [ 
 	| ngramSmoothing |
 	super initialize.
-	tfidf := PGTermFrequencyInverseDocumentFrequency new.
+	tfidf := TermFrequencyInverseDocumentFrequency new.
 	
 	ngramSmoothing := NgramLaplaceSmoothing new.
 	ngramModel := NgramModel order: 2 withSmoothing: ngramSmoothing.

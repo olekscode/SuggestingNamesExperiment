@@ -1,8 +1,21 @@
 Class {
 	#name : #NGDatasetBuilder,
 	#superclass : #Object,
+	#instVars : [
+		'dataDirectory'
+	],
 	#category : #SuggestingNamesExperiment
 }
+
+{ #category : #'private - loading data' }
+NGDatasetBuilder >> dataDirectory [
+	^ dataDirectory 
+]
+
+{ #category : #'private - loading data' }
+NGDatasetBuilder >> dataDirectory: anObject [
+	dataDirectory := anObject
+]
 
 { #category : #'private - loading data' }
 NGDatasetBuilder >> loadMethodsTableFrom: aFileReference [
@@ -15,37 +28,17 @@ NGDatasetBuilder >> loadMethodsTableFrom: aFileReference [
 
 { #category : #'private - loading data' }
 NGDatasetBuilder >> loadTestMethodsTable [
-	^ self loadMethodsTableFrom: self pathToTestMethodsTableFile
+	^ self loadMethodsTableFrom: self testMethodsTableFile
 ]
 
 { #category : #'private - loading data' }
 NGDatasetBuilder >> loadTrainMethodsTable [
-	^ self loadMethodsTableFrom: self pathToTrainMethodsTableFile
+	^ self loadMethodsTableFrom: self trainMethodsTableFile
 ]
 
 { #category : #'private - loading data' }
 NGDatasetBuilder >> loadValidMethodsTable [
-	^ self loadMethodsTableFrom: self pathToValidMethodsTableFile
-]
-
-{ #category : #'private - loading data' }
-NGDatasetBuilder >> pathToDataDirectory [
-	^ '/Users/oleks/Downloads/NameGen2020' asFileReference
-]
-
-{ #category : #'private - loading data' }
-NGDatasetBuilder >> pathToTestMethodsTableFile [
-	^ self pathToDataDirectory / 'test_methods.csv'.
-]
-
-{ #category : #'private - loading data' }
-NGDatasetBuilder >> pathToTrainMethodsTableFile [
-	^ self pathToDataDirectory / 'train_methods.csv'.
-]
-
-{ #category : #'private - loading data' }
-NGDatasetBuilder >> pathToValidMethodsTableFile [
-	^ self pathToDataDirectory / 'valid_methods.csv'.
+	^ self loadMethodsTableFrom: self validMethodsTableFile
 ]
 
 { #category : #'private - loading data' }
@@ -79,4 +72,19 @@ NGDatasetBuilder >> splitNamesSourcesIn: methodsTable [
 	methodsTable 
 		toColumns: #(name source)
 		applyElementwise: [ :each | each substrings ].
+]
+
+{ #category : #'private - loading data' }
+NGDatasetBuilder >> testMethodsTableFile [
+	^ self dataDirectory / 'test_methods.csv'.
+]
+
+{ #category : #'private - loading data' }
+NGDatasetBuilder >> trainMethodsTableFile [
+	^ self dataDirectory / 'train_methods.csv'.
+]
+
+{ #category : #'private - loading data' }
+NGDatasetBuilder >> validMethodsTableFile [
+	^ self dataDirectory / 'valid_methods.csv'.
 ]
