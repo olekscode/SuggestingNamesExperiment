@@ -8,6 +8,18 @@ Class {
 	#category : #SuggestingNamesExperiment
 }
 
+{ #category : #'as yet unclassified' }
+NGModel >> chooseKeywordsFrom: codeAsCollectionOfWords [
+	| tfidfScores |
+	tfidfScores := codeAsCollectionOfWords asSet
+		select: [ :word | tfidfModel vocabulary includes: word ]
+		thenCollect: [ :word |
+			word -> (tfidfModel scoreOf: word in: codeAsCollectionOfWords) ].
+	
+	^ tfidfScores asDataSeries sortDescending keys first: (3 min: tfidfScores size)
+	"^ (tfidfScores select: [ :each | each value > 4 ]) asDataSeries sortDescending keys"
+]
+
 { #category : #training }
 NGModel >> initialize [ 
 	| ngramSmoothing |
@@ -24,14 +36,23 @@ NGModel >> ngramModel [
 ]
 
 { #category : #'as yet unclassified' }
-NGModel >> suggestNameFor: codeAsCollectionOfWords [
-	| tfidfScores |
-	tfidfScores := codeAsCollectionOfWords asSet
-		select: [ :word | tfidfModel vocabulary includes: word ]
-		thenCollect: [ :word |
-			word -> (tfidfModel scoreOf: word in: codeAsCollectionOfWords) ].
+NGModel >> orderWords: aCollectionOfWords [
+	| permutations scores |
+	permutations := OrderedCollection new.
 	
-	^ tfidfScores select: [ :each | each value > 4 ] thenCollect: [ :each | each key ]
+	aCollectionOfWords permutationsDo: [ :each | permutations add: each copy ].
+	scores := permutations collect: [ :each | each -> (ngramModel probabilityOfSequence: each) ].
+	scores := scores asDataSeries.
+	^ scores keyAtValue: scores max
+
+]
+
+{ #category : #'as yet unclassified' }
+NGModel >> suggestNameFor: codeAsCollectionOfWords [
+	| keywords orderedKeywords |
+	keywords := self chooseKeywordsFrom: codeAsCollectionOfWords.
+	orderedKeywords := self orderWords: keywords.
+	^ orderedKeywords 
 ]
 
 { #category : #accessing }
