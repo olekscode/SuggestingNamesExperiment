@@ -55,6 +55,14 @@ NGModel >> suggestNameFor: codeAsCollectionOfWords [
 	^ orderedKeywords 
 ]
 
+{ #category : #'as yet unclassified' }
+NGModel >> suggestNameForMethod: aCompiledMethod [
+	| sourceCodeWords nameWords |
+	sourceCodeWords := aCompiledMethod wordsFromIdentifierNames.
+	nameWords := self suggestNameFor: sourceCodeWords.
+	^ (' ' join: nameWords) asCamelCase uncapitalized.
+]
+
 { #category : #accessing }
 NGModel >> tfidfModel [
 	^tfidfModel
