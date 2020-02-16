@@ -38,6 +38,10 @@ NGModel >> ngramModel [
 { #category : #'as yet unclassified' }
 NGModel >> orderWords: aCollectionOfWords [
 	| permutations scores |
+	
+	aCollectionOfWords
+		ifEmpty: [ ^ aCollectionOfWords ].
+	
 	permutations := OrderedCollection new.
 	
 	aCollectionOfWords permutationsDo: [ :each | permutations add: each copy ].
@@ -63,6 +67,18 @@ NGModel >> suggestNameForMethod: aCompiledMethod [
 	^ (' ' join: nameWords) asCamelCase uncapitalized.
 ]
 
+{ #category : #'as yet unclassified' }
+NGModel >> suggestNamesForAll: aCollectionOfMethodWords [
+	| names |
+	names := OrderedCollection new.
+	
+	(1 to: aCollectionOfMethodWords size)
+		do: [ :i | names add: (self suggestNameFor: (aCollectionOfMethodWords at: i)) ]
+		displayingProgress: [ :i | 'Generating name for method ', i asString ].
+		
+	^ names
+]
+
 { #category : #accessing }
 NGModel >> tfidfModel [
 	^tfidfModel
@@ -70,8 +86,10 @@ NGModel >> tfidfModel [
 
 { #category : #training }
 NGModel >> trainOn: trainMethodsTable [
-	| sources |
+	| sources names |
 	sources := (trainMethodsTable column: 'source') asOrderedCollection.
+	names := (trainMethodsTable column: 'name') asOrderedCollection.
+	
 	tfidfModel trainOn: sources.
-	ngramModel trainOnMethods: sources.
+	ngramModel trainOnMethods: names.
 ]
