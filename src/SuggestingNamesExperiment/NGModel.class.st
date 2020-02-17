@@ -3,21 +3,38 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'ngramModel',
-		'tfidfModel'
+		'tfidfModel',
+		'tfidfThreshold'
 	],
 	#category : #SuggestingNamesExperiment
 }
 
 { #category : #'as yet unclassified' }
 NGModel >> chooseKeywordsFrom: codeAsCollectionOfWords [
-	| tfidfScores |
+	| tfidfScores keywords maxScore |
 	tfidfScores := codeAsCollectionOfWords asSet
 		select: [ :word | tfidfModel vocabulary includes: word ]
 		thenCollect: [ :word |
 			word -> (tfidfModel scoreOf: word in: codeAsCollectionOfWords) ].
+		
+	tfidfScores ifEmpty: [ 
+		^ { codeAsCollectionOfWords asSet anyOne } ].
 	
-	^ tfidfScores asDataSeries sortDescending keys first: (3 min: tfidfScores size)
-	"^ (tfidfScores select: [ :each | each value > 4 ]) asDataSeries sortDescending keys"
+	keywords := (tfidfScores select: [ :each | each value > self tfidfThreshold ]) asDataSeries sortDescending keys.
+	
+	keywords ifEmpty: [ 
+		maxScore := tfidfScores asDictionary max.
+		keywords := { (tfidfScores detect: [ :assoc | assoc value = maxScore ]) key } ].
+	
+	keywords size > 5 ifTrue: [ 
+		keywords := keywords first: 5 ].
+	
+	^ keywords
+]
+
+{ #category : #accessing }
+NGModel >> defaultTfidfThreshold [
+	 ^2.5
 ]
 
 { #category : #training }
@@ -25,6 +42,7 @@ NGModel >> initialize [
 	| ngramSmoothing |
 	super initialize.
 	tfidfModel := TermFrequencyInverseDocumentFrequency new.
+	tfidfThreshold := self defaultTfidfThreshold.
 	
 	ngramSmoothing := NgramLaplaceSmoothing new.
 	ngramModel := NgramModel order: 2 withSmoothing: ngramSmoothing.
@@ -55,8 +73,9 @@ NGModel >> orderWords: aCollectionOfWords [
 NGModel >> suggestNameFor: codeAsCollectionOfWords [
 	| keywords orderedKeywords |
 	keywords := self chooseKeywordsFrom: codeAsCollectionOfWords.
-	orderedKeywords := self orderWords: keywords.
-	^ orderedKeywords 
+	"orderedKeywords := self orderWords: keywords.
+	^ orderedKeywords "
+	^ keywords
 ]
 
 { #category : #'as yet unclassified' }
@@ -74,7 +93,7 @@ NGModel >> suggestNamesForAll: aCollectionOfMethodWords [
 	
 	(1 to: aCollectionOfMethodWords size)
 		do: [ :i | names add: (self suggestNameFor: (aCollectionOfMethodWords at: i)) ]
-		displayingProgress: [ :i | 'Generating name for method ', i asString ].
+		displayingProgress: [ :i | 'Generating name for method ', i asString, ' (', (i / aCollectionOfMethodWords size * 100 asFloat round: 2) asString, '%)' ].
 		
 	^ names
 ]
@@ -82,6 +101,16 @@ NGModel >> suggestNamesForAll: aCollectionOfMethodWords [
 { #category : #accessing }
 NGModel >> tfidfModel [
 	^tfidfModel
+]
+
+{ #category : #accessing }
+NGModel >> tfidfThreshold [
+	^tfidfThreshold
+]
+
+{ #category : #accessing }
+NGModel >> tfidfThreshold: anObject [
+	tfidfThreshold := anObject
 ]
 
 { #category : #training }
