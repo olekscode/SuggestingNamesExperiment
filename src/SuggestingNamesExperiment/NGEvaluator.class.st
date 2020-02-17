@@ -5,6 +5,20 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+NGEvaluator >> allScoresOf: predictedValues withTrueValues: trueValues [
+	| scores |
+	
+	scores := { 
+		'ExactMatch' -> (self exactMatchScoreOf: predictedValues withTrueValues: trueValues) .
+		'Precision' -> (self averagePrecisionScoreOf: predictedValues withTrueValues: trueValues) .
+		'Recall' -> (self averageRecallScoreOf: predictedValues withTrueValues: trueValues) .
+		'F1' -> (self averageF1ScoreOf: predictedValues withTrueValues: trueValues) .
+	} asDictionary.
+	
+	^ scores collect: [ :each | (each asFloat * 100 round: 1) asString, '%' ]
+]
+
+{ #category : #'as yet unclassified' }
 NGEvaluator >> averageF1ScoreOf: predictedValues withTrueValues: trueValues [
 	| f1Sum |
 	
